@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   actionlib_msgs
+  actionlib
   geometry_msgs
 )
 
@@ -109,7 +110,7 @@ add_action_files(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES one_step_motor_control
-   CATKIN_DEPENDS roscpp rospy std_msgs actionlib_msgs geometry_msgs
+   CATKIN_DEPENDS roscpp rospy std_msgs actionlib actionlib_msgs geometry_msgs
 #  DEPENDS system_lib
 )
 
@@ -208,3 +209,10 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+add_executable(osmc_action_client src/osmc_action_client.cpp)
+target_link_libraries(osmc_action_client ${catkin_LIBRARIES})
+
+#
+add_executable(osmc_action_server src/osmc_action_server.cpp) 
+target_link_libraries(osmc_action_server ${catkin_LIBRARIES}) 
