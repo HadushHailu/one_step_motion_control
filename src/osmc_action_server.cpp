@@ -36,7 +36,7 @@ public:
     as_.start();
     sub_ = nh_.subscribe("/odom", 100, &OsmcServer::odomTopicCB, this);
     pub_ = nh_.advertise<geometry_msgs::Twist>("/cmd_vel", 1000);
-    pubPath_ = nh_.advertise<nav_msgs::Path>("/osmc/globalPath",100);
+    pubPath_ = nh_.advertise<nav_msgs::Path>("/osmc/pathPlanner/globalPath",100);
   }
 
   ~OsmcServer(void)
@@ -45,6 +45,11 @@ public:
 
  void odomTopicCB(const nav_msgs::Odometry  msg){
 	 odom_ = msg;
+ }
+
+
+ double angZControl(double min_z, double max_z, double diff_ang_z){
+   //control algorithm here
  }
 
  geometry_msgs::Twist zeroTwist(geometry_msgs::Twist twist){
@@ -94,6 +99,7 @@ public:
 	 odomPoseStamped.header = odom_.header;
 	 odomPoseStamped.pose = odom_.pose.pose;
 	 //push_back to path
+	 path_.poses.clear();
 	 path_.header = odom_.header;
 	 path_.poses.push_back(odomPoseStamped);
 	 path_.poses.push_back(goal);
