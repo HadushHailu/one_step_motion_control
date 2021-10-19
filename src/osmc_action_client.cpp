@@ -1,11 +1,11 @@
 #include <ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
-#include <one_step_motor_control/OsmcAction.h>
+#include <one_step_motion_control/OsmcAction.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <string>
 
 
-typedef actionlib::SimpleActionClient<one_step_motor_control::OsmcAction> Client;
+typedef actionlib::SimpleActionClient<one_step_motion_control::OsmcAction> Client;
 
 class OsmcClient
 {
@@ -28,7 +28,7 @@ public:
     ac_.waitForServer();
     ROS_INFO("Osmc Action server started, sending goal.");
 
-    one_step_motor_control::OsmcGoal goal;
+    one_step_motion_control::OsmcGoal goal;
     goal.target_pose = msg;
     ac_.sendGoal(goal,
                 boost::bind(&OsmcClient::doneCb, this, _1, _2),
@@ -41,7 +41,7 @@ public:
 
 
   void doneCb(const actionlib::SimpleClientGoalState& state,
-              const one_step_motor_control::OsmcResultConstPtr& result)
+              const one_step_motion_control::OsmcResultConstPtr& result)
   {
     ROS_INFO("Finished in state [%s]", state.toString().c_str());
     //ROS_INFO("Answer: %i", result->sequence.back());

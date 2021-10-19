@@ -1,7 +1,7 @@
 #include <ros/ros.h>
 #include <std_msgs/Float32.h>
 #include <actionlib/server/simple_action_server.h>
-#include <one_step_motor_control/OsmcAction.h>
+#include <one_step_motion_control/OsmcAction.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <tf/transform_datatypes.h>
 #include <nav_msgs/Odometry.h>
@@ -15,16 +15,17 @@ class OsmcServer
 {
 private:
 	ros::NodeHandle nh_;
-	actionlib::SimpleActionServer<one_step_motor_control::OsmcAction> as_;
+	actionlib::SimpleActionServer<one_step_motion_control::OsmcAction> as_;
 	std::string action_name_;
-	one_step_motor_control::OsmcFeedback feedback_;
-	one_step_motor_control::OsmcResult result_;
+	one_step_motion_control::OsmcFeedback feedback_;
+	one_step_motion_control::OsmcResult result_;
     
 	nav_msgs::Odometry odom_;
         nav_msgs::Path path_;	
 	ros::Subscriber sub_;
 	ros::Publisher pub_;
 	ros::Publisher pubPath_;
+	double max_ang_vel = 60*PI/180;
 
 
 public:
@@ -63,13 +64,14 @@ public:
 
  }
 
- void executeCB(const one_step_motor_control::OsmcGoalConstPtr &msg){
+ void executeCB(const one_step_motion_control::OsmcGoalConstPtr &msg){
 
 	 //helper variables
-	 ros::Rate r(5);
+	 ros::Rate r(10);
 	 bool sucess = true;
 	 double ang_z,lin_x;
 	 geometry_msgs::Twist current_cmd;
+	 double eucl_distance_current_to_goal;
 	 
 	 //get goal
 	 geometry_msgs::PoseStamped goal;
@@ -110,25 +112,41 @@ public:
 	 double path_yaw = atan((target_y - current_y)/(target_x - current_x));
 
 	 double diff_yaw = path_yaw - current_yaw;
-	 ROS_INFO("diff_yaw: %f current_yaw: %f target_yaw:%f \n",diff_yaw,current_yaw,target_yaw);
+	 //control linear
+	 double diff_lin = sqrt(pow((current_x - target_x),2) + pow((current_y - target_y),2));
+	 double diff_lin_x = target_x - current_x;
+
+	 //convert diff_yaw
+	 if(diff_lin_x < 0){
+		 if(diff_yaw < 0)
+			 diff_yaw = PI + diff_yaw;
+		 else
+			 diff_yaw = -PI + diff_yaw;
+	 }
+
+	 ROS_INFO("diff_yaw: %f current_yaw: %f path_yaw: %f target_yaw:%f \n",diff_yaw,current_yaw,path_yaw,target_yaw);
+	 
 	 //control angular
-	 if(fabs(diff_yaw) < 0.05){ // three degree
+	 if(fabs(diff_yaw) < 0.0523){ // 10  degrees
        		 ang_z = 0;
 	 }else if(diff_yaw > 0){
-		 ang_z = 0.5; 
+		 ang_z = 0.5; //Angular velocity is 0.5 or 28 degrees
 	 }else{
 		 ang_z = -0.5;
 	 }
-
-	 //control linear
-	 double diff_lin_x = target_x - current_x;
-	 if(fabs(diff_lin_x) < 0.02){ //two centmeter
+	 
+	 ROS_INFO("diff_lin: %f \n",diff_lin);
+ 
+	 if(diff_lin < 0.02){ //two centmeter
 	 	lin_x = 0;
-	 }else if(diff_lin_x > 0){
-	 	lin_x = 0.1;
 	 }else{
-	 	lin_x = -0.1;
-	 }
+	 	if(diff_yaw >= 0.78)
+			lin_x = 0;
+		else
+			lin_x = 0.1;
+	 
+	 } 
+	 
 
 	 current_cmd.linear.x = lin_x;
 	 current_cmd.angular.z = ang_z;

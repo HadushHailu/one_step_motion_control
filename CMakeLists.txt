@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(one_step_motor_control)
+project(one_step_motion_control)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -215,4 +215,9 @@ target_link_libraries(osmc_action_client ${catkin_LIBRARIES})
 
 #
 add_executable(osmc_action_server src/osmc_action_server.cpp) 
-target_link_libraries(osmc_action_server ${catkin_LIBRARIES}) 
+target_link_libraries(osmc_action_server ${catkin_LIBRARIES})
+
+#
+catkin_install_python(PROGRAMS scripts/odom_amcl_pose.py
+	  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+	  )

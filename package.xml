@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>one_step_motor_control</name>
+  <name>one_step_motion_control</name>
   <version>0.0.0</version>
   <description>The one_step_motor_control package</description>
 
