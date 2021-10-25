@@ -88,7 +88,7 @@ public:
          ROS_INFO("TARGET : pose (%f,%f) yaw %f \n",target_x,target_y,target_yaw);
 
 
-	 while(1){
+	 while(!as_.isPreemptRequested()){
 	 
 	 //zero twist
 	 current_cmd = zeroTwist(current_cmd);
@@ -127,7 +127,7 @@ public:
 	 ROS_INFO("diff_yaw: %f current_yaw: %f path_yaw: %f target_yaw:%f \n",diff_yaw,current_yaw,path_yaw,target_yaw);
 	 
 	 //control angular
-	 if(fabs(diff_yaw) < 0.0523){ // 10  degrees
+	 if(fabs(diff_yaw) < 0.0523 or diff_lin < 0.1){ // 10  degrees
        		 ang_z = 0;
 	 }else if(diff_yaw > 0){
 		 ang_z = 0.5; //Angular velocity is 0.5 or 28 degrees
@@ -135,13 +135,14 @@ public:
 		 ang_z = -0.5;
 	 }
 	 
+	 
 	 ROS_INFO("diff_lin: %f \n",diff_lin);
- 
+
 	 if(diff_lin < 0.02){ //two centmeter
 	 	lin_x = 0;
 	 }else{
-	 	if(diff_yaw >= 0.78)
-			lin_x = 0;
+		 if(diff_yaw >= 0.78)
+			 lin_x = 0;
 		else
 			lin_x = 0.1;
 	 
